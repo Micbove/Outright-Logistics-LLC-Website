@@ -1,0 +1,165 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  EMPLOYEE
+}
+
+enum ClientStatus {
+  LEAD
+  ACTIVE
+  COMPLETED
+}
+
+enum DocumentCategory {
+  CONTRACT
+  RECEIPT
+  INVOICE
+  NOTE
+  OTHER
+}
+
+model User {
+  id                 String    @id @default(cuid())
+  email              String    @unique
+  name               String?
+  role               UserRole  @default(EMPLOYEE)
+  passwordHash       String
+  active             Boolean   @default(true)
+  mustChangePassword Boolean   @default(true)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  sessions           Session[]
+  documentsUploaded  Document[] @relation("DocumentUploadedBy")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Client {
+  id           String       @id @default(cuid())
+  name         String
+  contactName  String?
+  contactEmail String?
+  contactPhone String?
+  notes        String?
+  status       ClientStatus @default(LEAD)
+  revenueCents Int?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  documents    Document[]
+  emails       EmailLog[]
+  expenses     ExpenseRecord[]
+
+  @@index([status])
+  @@index([name])
+}
+
+model Document {
+  id            String           @id @default(cuid())
+  clientId      String?
+  category      DocumentCategory @default(OTHER)
+
+  // Versioning (metadata-only for now):
+  // Use `documentKey` to group versions of the same logical document.
+  documentKey   String
+  version       Int              @default(1)
+
+  title         String?
+  notes         String?
+
+  // Storage fields (optional today, ready for local files later)
+  originalName  String?
+  mimeType      String?
+  sizeBytes     Int?
+  storagePath   String?
+
+  uploadedById  String?
+  createdAt     DateTime         @default(now())
+
+  client        Client?          @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  uploadedBy    User?            @relation("DocumentUploadedBy", fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  expenses      ExpenseRecord[]
+
+  @@unique([clientId, documentKey, version])
+  @@index([clientId])
+  @@index([category])
+  @@index([documentKey])
+}
+
+model ContactSubmission {
+  id        String   @id @default(cuid())
+  name      String
+  company   String
+  email     String
+  message   String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([email])
+}
+
+model PageView {
+  id        String   @id @default(cuid())
+  path      String
+  referrer  String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([path])
+}
+
+// Structural placeholder: email logging metadata only (no sending / no credentials).
+model EmailLog {
+  id        String   @id @default(cuid())
+  date      DateTime
+  subject   String
+  sender    String
+  clientId  String?
+  createdAt DateTime @default(now())
+
+  client    Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
+
+  @@index([date])
+  @@index([clientId])
+}
+
+// Structural placeholder for future exports compatible with QuickBooks workflows.
+model ExpenseRecord {
+  id              String   @id @default(cuid())
+  clientId        String
+  documentId      String?
+  expenseCategory String
+  date            DateTime
+  amountCents     Int?
+  createdAt       DateTime @default(now())
+
+  client          Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  document        Document? @relation(fields: [documentId], references: [id], onDelete: SetNull)
+
+  @@index([date])
+  @@index([expenseCategory])
+  @@index([clientId])
+}
+
