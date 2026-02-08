@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/session";
 import { logoutAction } from "./actions";
 import { AnalyticsTracker } from "@/components/shared/AnalyticsTracker";
+import { Suspense } from "react";
 
 export default async function AdminLayout({
   children
@@ -14,7 +15,9 @@ export default async function AdminLayout({
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <AnalyticsTracker />
+      <Suspense fallback={null}>
+        <AnalyticsTracker />
+      </Suspense>
       <div className="border-b border-slate-200 bg-white">
         <div className="container-page flex items-center justify-between py-4">
           <div className="flex items-center gap-3">

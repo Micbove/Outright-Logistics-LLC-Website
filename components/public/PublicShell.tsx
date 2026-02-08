@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AnalyticsTracker } from "@/components/shared/AnalyticsTracker";
+import { Suspense } from "react";
 
 function PublicNav() {
   return (
@@ -53,7 +54,9 @@ function PublicFooter() {
 export function PublicShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen">
-      <AnalyticsTracker />
+      <Suspense fallback={null}>
+        <AnalyticsTracker />
+      </Suspense>
       <PublicNav />
       <main>{children}</main>
       <PublicFooter />
