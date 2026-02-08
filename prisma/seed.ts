@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { db } from "../src/lib/db";
+import { db } from "../lib/db";
 
 function requiredEnv(name: string): string {
   const v = process.env[name];
