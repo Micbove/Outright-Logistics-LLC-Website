@@ -2,7 +2,6 @@
   "name": "outright-logistics-platform",
   "private": true,
   "version": "0.1.0",
-  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -12,8 +11,14 @@
     "db:push": "prisma db push",
     "db:seed": "prisma db seed"
   },
+  "ts-node": {
+    "transpileOnly": true,
+    "compilerOptions": {
+      "module": "CommonJS"
+    }
+  },
   "prisma": {
-    "seed": "node --loader ts-node/esm --no-warnings prisma/seed.ts"
+    "seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.1.0",

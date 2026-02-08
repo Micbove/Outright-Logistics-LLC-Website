@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 
+export const runtime = "nodejs";
+
 const ContactSchema = z.object({
   name: z.string().trim().min(1).max(120),
   company: z.string().trim().min(1).max(120),

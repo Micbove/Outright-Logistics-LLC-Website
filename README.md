@@ -55,22 +55,24 @@ npm install
 cp .env.example .env
 ```
 
-3. Set admin seed credentials in `.env`:
+3. Set environment variables in `.env`:
 
 - `ADMIN_EMAIL`
 - `ADMIN_TEMP_PASSWORD`
+- `DATABASE_URL` (SQLite file)
 
-4. Initialize the database and generate Prisma client:
+4. Create the SQLite database (development):
 
 ```bash
-npm run db:push
-npm run prisma:generate
+npx prisma migrate dev --name init
 ```
+
+This creates `dev.db` and a local migration under `prisma/migrations/`.
 
 5. Seed the initial admin user (only creates if not present):
 
 ```bash
-npm run db:seed
+npx ts-node prisma/seed.ts
 ```
 
 6. Start the dev server:
@@ -87,7 +89,16 @@ Then visit:
 
 ## Notes on deployment (Vercel)
 
-SQLite is file-based and **not** a good long-term fit for serverless deployments (the filesystem is ephemeral). For a real Vercel deployment, plan to move `DATABASE_URL` to a hosted Postgres/MySQL provider later.
+SQLite is file-based and **not** a good long-term fit for Vercel serverless deployments:
+
+- The project filesystem is **read-only** at runtime (except `/tmp`).
+- Any SQLite file is **ephemeral** and can reset between deployments and cold starts.
+
+If you still want SQLite for a short-lived demo, use:
+
+- `DATABASE_URL="file:/tmp/dev.db"`
+
+For persistence, move to a hosted DB (Neon/Supabase) when ready.
 
 This repo keeps SQLite because it’s the lowest-cost, simplest starting point for a solo founder while validating workflow.
 

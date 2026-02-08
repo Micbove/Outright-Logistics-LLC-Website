@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 
+export const runtime = "nodejs";
+
 const PageViewSchema = z.object({
   path: z.string().trim().min(1).max(2048),
   referrer: z.string().trim().max(2048).nullable().optional()
